@@ -1,4 +1,9 @@
 #!/bin/bash
+#Author: levelel
+#Date: 2021-07-01
+#Filename: mergeflv.sh
+#Description: Merge video files that downloaded via bilibili-evolved
+
 if ! ls * | grep -sqm1 '\- 02.flv'; then #grep 不报错，静默，找到一个即停止, '-'需要escape
 	exit
 elif [ ! -x "/usr/bin/ffmpeg" ]; then # -x to check if ffmpeg is executable
