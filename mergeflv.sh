@@ -1,6 +1,7 @@
 #!/bin/bash
 #Author: levelel
 #Date: 2021-07-01
+#Github: https://github.com/levelel/bilibili-evolved-afterwards
 #Filename: mergeflv.sh
 #Description: Merge video files that downloaded via bilibili-evolved
 
