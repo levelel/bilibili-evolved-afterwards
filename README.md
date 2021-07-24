@@ -10,6 +10,6 @@
 - 下载 .sh 文件，将其与视频文件放在一起。
 - 打开 terminal，让这个 .sh 文件可执行
   ```chmod +x mergeflv.sh```
-- 执行这个 .sh 脚本。
-```./mergeflv.sh```
+- 执行这个 .sh 脚本。可能需要输入管理员密码。
+```sudo bash ./mergeflv.sh```
 - 合并之后原来的分段 flv 文件被存放在 finshed_folder 文件夹里。检查之后可以删除。

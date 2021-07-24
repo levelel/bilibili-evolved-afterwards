@@ -4,6 +4,12 @@
 #Github: https://github.com/levelel/bilibili-evolved-afterwards
 #Filename: mergeflv.sh
 #Description: Merge video files that downloaded via bilibili-evolved
+#   The orignal names are like: 02 - 影子籃球員27-在冬季選拔賽上 - 06.flv
+#   after running the program, they should be combined and renamed as 02 - 影子籃球員27-在冬季選拔賽上.flv
+#Usage:
+    # download the mergeflv.sh file
+    # copy it to the target folder
+    # run it by: sudo bash mergeflv.sh
 
 if ! ls * | grep -sqm1 '\- 02.flv'; then #grep 不报错，静默，找到一个即停止, '-'需要escape
 	exit
@@ -22,7 +28,8 @@ finished_folder=./finished_folder
 :>$input_file_list
 
 mkdir $finished_folder &> /dev/null # &> or >& /dev/null, to throw the output away if any error
-set -x # set - Set or unset values of shell options and positional parameters. - x, to print commands and their arguments as they are executed.
+set -x # set - Set or unset values of shell options and positional parameters. - x,
+        # to print commands and their arguments as they are executed.
 
 
 SAVEIFS=$IFS
@@ -46,15 +53,18 @@ for F in `find . -maxdepth 1 -type f -regex '.\/.* - [0-9]+\.flv'`; do
 
         # put to-be-combined file names into input file
         file_list=()
+        set +x
         for line in `ls --sort version *.flv | grep -F "$output_file_name"`; do
             echo "file '$line'" >> $input_file_list
             file_list+=($line)
         done
+        set -x
+        echo file_list
 
         # merge files to single flv. Not converting to mp4 or mkv for best compatibility
-        # -safe 0, for file names that contain special characters
-        # -n, means don't overwrite existed file
         if [ ! -f "${output_file_name}.flv" ]; then
+            # -safe 0, for file names that contain special characters
+            # -n, means don't overwrite existed file
             /usr/bin/ffmpeg -f concat -safe 0 -i "${input_file_list}" -n -c copy "${output_file_name}.flv"
             # move part files to finished folder. so you can simply delete the folder
             for file in ${file_list[@]}; do
@@ -71,6 +81,9 @@ for F in `find . -maxdepth 1 -type f -regex '.\/.* - [0-9]+\.flv'`; do
     fi
 done
 IFS=$SAVEIFS # change delimiter back
+
+# clean up temp file
+rm $input_file_list
 
 # turn off "set -x"
 set +x
