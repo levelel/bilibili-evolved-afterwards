@@ -4,14 +4,24 @@
 #Github: https://github.com/levelel/bilibili-evolved-afterwards
 #Filename: mergeflv.sh
 #Description: Merge video files that downloaded via bilibili-evolved
-#   The orignal names are like: 02 - 影子籃球員27-在冬季選拔賽上 - 06.flv
+#   The orignal names are (and should be named) like: 02 - 影子籃球員27-在冬季選拔賽上 - 06.flv
 #   after running the program, they should be combined and renamed as 02 - 影子籃球員27-在冬季選拔賽上.flv
 #Usage:
     # download the mergeflv.sh file
     # copy it to the target folder
-    # run it by: sudo bash mergeflv.sh
+    # run it by: sudo ./mergeflv.sh
+    # optional argument: if run the command by ./merghflv.sh mkv, it will search and merge mkv instead of flv, you can change it to any video 
+    # 	file extension you like.
+#
 
-if ! ls * | grep -sqm1 '\- 02.flv'; then #grep 不报错，静默，找到一个即停止, '-'需要escape
+if [ -z "$1" ]; then 
+	ext='flv'
+else
+	ext=$1 # default is flv, unless specified 
+fi
+
+if ! ls * | grep -sqm1 " \- 02.${ext}"; then #grep 不报错，静默，找到一个即停止, '-'需要escape
+	echo "Could not locate files that needs to be merged. We need file names ended with something like ' - 02.${ext}'" 
 	exit
 elif [ ! -x "/usr/bin/ffmpeg" ]; then # -x to check if ffmpeg is executable
 	echo "Could not execute /usr/bin/ffmpeg"
@@ -19,6 +29,7 @@ elif [ ! -x "/usr/bin/ffmpeg" ]; then # -x to check if ffmpeg is executable
 else
 	:
 fi
+echo "Start reading folder"
 
 processed=/tmp/processed.tmp
 input_file_list=./input_file_list.tmp
@@ -29,55 +40,55 @@ finished_folder=./finished_folder
 
 mkdir $finished_folder &> /dev/null # &> or >& /dev/null, to throw the output away if any error
 set -x # set - Set or unset values of shell options and positional parameters. - x,
-        # to print commands and their arguments as they are executed.
+# to print commands and their arguments as they are executed.
 
 
 SAVEIFS=$IFS
 IFS=$(echo -en "\n\b")  # change delimiter from \s to \n\b, otherwise F would be part of the whole name if file name has spaces
-for F in `find . -maxdepth 1 -type f -regex '.\/.* - [0-9]+\.flv'`; do
-    # 去头去尾
-    output_file_name="${F% - *[0-9][0-9].flv}"         # ${F%pattern}, remove '- xx.flv' from the end, shortest match
-    output_file_name="${output_file_name#.\/}"         # ${F#pattern}, remove './' from the beginning, shortet match
-    count=`ls *.flv | grep -Fc "$output_file_name"`
+for F in `find . -maxdepth 1 -type f -regex ".\/.* - [0-9]+\.${ext}"`; do
+	# 去头去尾
+	output_file_name="${F% - *[0-9][0-9].${ext}}"         # ${F%pattern}, remove '- xx.${ext}' from the end, shortest match
+	output_file_name="${output_file_name#.\/}"         # ${F#pattern}, remove './' from the beginning, shortet match
+	count=`ls *.${ext} | grep -Fc "$output_file_name"`
 
     # check if the video has only one part, if yes, it does not need to merge
     if [ ${count} -le 1 ]; then
-		continue
-	fi
+	    continue
+    fi
 
     # if it has multiple parts, and 
     # if it is not in the processed file list, write it into the processed list
     if ! cat $processed | grep -Fsqm1 "$output_file_name"; then
-        # put file name in processed list
-        echo $output_file_name >> $processed
+	    # put file name in processed list
+	    echo $output_file_name >> $processed
 
-        # put to-be-combined file names into input file
-        file_list=()
-        set +x
-        for line in `ls --sort version *.flv | grep -F "$output_file_name"`; do
-            echo "file '$line'" >> $input_file_list
-            file_list+=($line)
-        done
-        set -x
-        echo file_list
+	# put to-be-combined file names into input file
+	file_list=()
+	set +x
+	for line in `ls --sort version *.${ext} | grep -F "$output_file_name"`; do
+		echo "file '$line'" >> $input_file_list
+		file_list+=($line)
+	done
+	set -x
+	echo file_list
 
-        # merge files to single flv. Not converting to mp4 or mkv for best compatibility
-        if [ ! -f "${output_file_name}.flv" ]; then
-            # -safe 0, for file names that contain special characters
-            # -n, means don't overwrite existed file
-            /usr/bin/ffmpeg -f concat -safe 0 -i "${input_file_list}" -n -c copy "${output_file_name}.flv"
-            # move part files to finished folder. so you can simply delete the folder
-            for file in ${file_list[@]}; do
-                mv "$file" "$finished_folder"
-            done
-        fi
-        
-        # clear file_list
-        unset file_list
+	# merge files to single ${ext}. Not converting to mp4 or mkv for best compatibility
+	if [ ! -f "${output_file_name}.${ext}" ]; then
+		# -safe 0, for file names that contain special characters
+		# -n, means don't overwrite existed file
+		/usr/bin/ffmpeg -f concat -safe 0 -i "${input_file_list}" -n -c copy "${output_file_name}.${ext}"
+		# move part files to finished folder. so you can simply delete the folder
+		for file in ${file_list[@]}; do
+			mv "$file" "$finished_folder"
+		done
+	fi
+
+	# clear file_list
+	unset file_list
 
 
-        # clear the input file
-        :>$input_file_list
+	# clear the input file
+	:>$input_file_list
     fi
 done
 IFS=$SAVEIFS # change delimiter back

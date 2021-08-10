@@ -4,6 +4,7 @@
 
 ## 目的
 合并从B站下载的分段 flv 视频文件 -- 在使用油猴脚本 [Bilibili-Evolved](https://github.com/the1812/Bilibili-Evolved "the1812 / Bilibili-Evolved") 下载视频之后，很多视频分段成几个 flv 文件，原脚本并没有合并这些文件的功能。
+更新：现在支持其他格式的文件，只要ffmpeg支持且文件名以``` - 02.mkv```这样的格式结尾即可。
 
 ## 用法：
 - 前提：在系统中安装有 ffmpeg 。并放在 /usr/bin/ffmpeg
@@ -11,5 +12,5 @@
 - 打开 terminal，让这个 .sh 文件可执行
   ```chmod +x mergeflv.sh```
 - 执行这个 .sh 脚本。可能需要输入管理员密码。
-```sudo bash ./mergeflv.sh```
+```sudo ./mergeflv.sh``` 如果要合并的是其他格式的文件，可以在后面加上文件后缀，如 ```sudo ./mergeflv.sh mkv```就会合并 mkv 文件
 - 合并之后原来的分段 flv 文件被存放在 finshed_folder 文件夹里。检查之后可以删除。
